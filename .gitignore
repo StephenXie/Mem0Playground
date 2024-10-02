@@ -1,0 +1,31 @@
+# Ignore the virtual environment for Django (backend)
+
+.venv/
+backend/.env
+backend/**/__pycache__/
+backend/db.sqlite3
+
+# Django logs and temp files
+backend/*.log
+backend/tmp/
+backend/media/
+backend/staticfiles/
+
+# Next.js build files (frontend)
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.development
+frontend/.env.production
+
+# Ignore lock files for npm/yarn
+frontend/package-lock.json
+frontend/yarn.lock
+
+# Ignore MacOS system files
+.DS_Store
+
+# Ignore IDE and editor specific files
+.vscode/
+.idea/
+*.swp
