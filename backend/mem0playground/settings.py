@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # apps
     'memory',
     'user',
+    'chat',
 
     # third party apps
     'rest_framework',
