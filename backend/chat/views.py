@@ -3,7 +3,9 @@ from .models import Chat
 from .serializers import ChatSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.http import StreamingHttpResponse
 from dotenv import load_dotenv
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 import os
@@ -59,7 +61,7 @@ def update_chat(request):
 @api_view(['POST'])
 def query_llm(request):
     messages = json.loads(request.data.get('messages'))
-    latest_message = messages[-1].get("content")
+    latest_message = messages.pop().get("content")
     user_id = request.data.get('user_id')
     requested_model = request.data.get('model')
     openai_models = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
@@ -70,8 +72,24 @@ def query_llm(request):
         model = ChatAnthropic(model=requested_model)
     else:
         return Response({"error": "Model not found"}, status=400)
-
     recalled_memory = search_memory({"data": {"user_id": user_id, "query": latest_message}})
-    
+    processed_memory = process_memory(recalled_memory)
+    formatted_message = format_messages(messages, processed_memory)
+    template = ChatPromptTemplate(formatted_message)
+    chain = model | template
+    response = chain.invoke({"user_input": latest_message})
     messages = create_memory({"data": {"message": latest_message, "user_id": user_id}})
-    return Response({"llm": llm}, status=200)
+    return Response({"response": response}, status=200)
+
+def process_memory(memories):
+    prompt = "Here are some things about the user:\n"
+    for memory in memories:
+        prompt += f"{memory.get('memory')}\n"
+    return prompt
+
+def format_messages(messages, memory):
+    res = [("system", memory)]
+    for message in messages:
+        res.append((message["role"], message["content"]))
+    res.append(("user", "{user_input}"))
+    return res

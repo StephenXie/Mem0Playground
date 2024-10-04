@@ -1,32 +1,75 @@
-import React from 'react';
-import Image from 'next/image';
-import { FaGoogle } from "react-icons/fa"; // Assuming you have an IconGoogle component for the Google logo
-import { signIn } from 'next-auth/react';
-import Link from 'next/link';
+import { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { UserAuthForm } from "@/components/user-auth-form";
 
-const LoginPage = () => {
+export default function LoginPage() {
   return (
-    <div className="login">
-      <div id="header" className="flex items-center ml-5 mt-5">
-        <Image src="https://bookface-images.s3.amazonaws.com/small_logos/56ef3ec5ae83019ddb5d6898272fd3b9d1089c62.png" className="rounded-full" alt="Mem0 Logo" width={40} height={40} />
-        <span className="ml-2 text-xl font-bold">mem0</span>
+    <>
+      <div className="md:hidden">
+        <Image
+          src="https://app.mem0.ai/images/light.svg"
+          width={2480}
+          height={843}
+          alt="Authentication"
+          className="block"
+        />
       </div>
-      <div id="content" className="flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-semibold">Welcome to Mem0.ai!</h1>
-        <p className="text-lg mt-2">Sign in to your account</p>
-        <button onClick={() => signIn("google")} className="flex items-center mt-4 bg-blue-500 text-white py-2 px-4 rounded">
-          <FaGoogle className="mr-2" />
-          Continue with Google
-        </button>
-        <p className="text-sm text-center mt-4">
-          By continuing, you agree to Mem0's
-          <a href="/terms" className="text-blue-500 underline"> Terms of Service</a> and 
-          <a href="/privacy" className="text-blue-500 underline"> Privacy Policy</a>, 
-          and to receive periodic emails with updates.
-        </p>
+      <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+          <div className="absolute inset-0 bg-zinc-900" />
+          <div className="relative z-20 flex items-center text-lg font-medium">
+            <Image
+              src="https://app.mem0.ai/images/light.svg"
+              width={90}
+              height={90}
+              alt="Authentication"
+              className="block mr-2"
+            />
+          </div>
+          <div className="relative z-20 my-auto mx-32">
+            <blockquote className="space-y-2">
+              <p className="text-2xl font-medium">
+                &ldquo;Mem0 is a self-improving memory layer for LLM applications, enabling personalized Al
+experiences that save costs and delight users.&rdquo;
+              </p>
+            </blockquote>
+          </div>
+        </div>
+        <div className="lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Welcome!
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Sign in to your account
+              </p>
+            </div>
+            <UserAuthForm />
+            <p className="px-8 text-center text-sm text-muted-foreground">
+              By clicking continue, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="underline underline-offset-4 hover:text-primary"
+              >
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
-};
-
-export default LoginPage;
+}

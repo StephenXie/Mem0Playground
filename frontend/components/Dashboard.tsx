@@ -1,5 +1,7 @@
 "use client"
 import React, { useState } from 'react'
+import Image from 'next/image'
+import {signOut} from "next-auth/react"
 import { MessageSquare, Users, PlayCircle, ChevronDown, Send, RefreshCw } from 'lucide-react'
 import {
     Avatar,
@@ -28,11 +30,14 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-md">
-        <div className="p-2 h-10 border-b">
-        <Avatar className="rounded-full">
-        <AvatarImage src="https://app.mem0.ai/images/light.svg" className="h-10 w-10" alt="@shadcn" />
-        <AvatarFallback>CN</AvatarFallback>
-      </Avatar>
+        <div className="p-2 h-14 border-b">
+        <Image
+              src="https://app.mem0.ai/images/light.svg"
+              width={90}
+              height={90}
+              alt="Authentication"
+              className="block ml-2 mt-2"
+            />
         </div>
         <nav className="p-4">
           <button className="flex items-center w-full p-2 text-left text-gray-700 hover:bg-gray-100 rounded">
@@ -46,6 +51,10 @@ export default function Dashboard() {
           <button className="flex items-center w-full p-2 text-left text-gray-700 hover:bg-gray-100 rounded">
             <PlayCircle className="mr-3" size={20} />
             Playground
+          </button>
+          <button onClick={() => signOut()} className="flex items-center w-full p-2 text-left text-gray-700 hover:bg-gray-100 rounded">
+            <Users className="mr-3" size={20} />
+            Log out
           </button>
         </nav>
         <div className="p-4 border-t">

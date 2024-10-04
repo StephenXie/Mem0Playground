@@ -7,4 +7,5 @@ urlpatterns = [
     path('delete', views.delete_chat, name='delete_chat'),
     path('get', views.get_chat_by_id, name='get_chat_by_id'),
     path('update', views.update_chat, name='update_chat'),
+    path('query', views.query_llm, name='query_llm')
 ]
