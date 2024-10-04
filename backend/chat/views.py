@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from .models import Chat
 from .serializers import ChatSerializer
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.http import StreamingHttpResponse
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 import os
 from memory.views import *
+from user.models import CustomUserModel
 import json
 load_dotenv()
 # Create your views here.
@@ -59,10 +61,13 @@ def update_chat(request):
     return Response({"chat": ChatSerializer(chat).data}, status=200)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def query_llm(request):
+    print(request.data)
     messages = json.loads(request.data.get('messages'))
-    latest_message = messages.pop().get("content")
-    user_id = request.data.get('user_id')
+    latest_message = messages[-1].get("content")
+    email = request.data.get('email')
+    user_id = CustomUserModel.objects.get(email=email).user_id
     requested_model = request.data.get('model')
     openai_models = ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
     anthropic_models = ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"]
@@ -70,15 +75,14 @@ def query_llm(request):
         model = ChatOpenAI(model=requested_model)
     elif requested_model in anthropic_models:
         model = ChatAnthropic(model=requested_model)
+        messages = [("user", "Hi!")] + messages
     else:
         return Response({"error": "Model not found"}, status=400)
-    recalled_memory = search_memory({"data": {"user_id": user_id, "query": latest_message}})
+    recalled_memory = search_memory_helper(user_id,latest_message)
     processed_memory = process_memory(recalled_memory)
     formatted_message = format_messages(messages, processed_memory)
-    template = ChatPromptTemplate(formatted_message)
-    chain = model | template
-    response = chain.invoke({"user_input": latest_message})
-    messages = create_memory({"data": {"message": latest_message, "user_id": user_id}})
+    response = model.invoke(formatted_message)
+    messages = create_memory_helper(latest_message, user_id)
     return Response({"response": response}, status=200)
 
 def process_memory(memories):
@@ -90,6 +94,8 @@ def process_memory(memories):
 def format_messages(messages, memory):
     res = [("system", memory)]
     for message in messages:
-        res.append((message["role"], message["content"]))
-    res.append(("user", "{user_input}"))
+        if "role" not in message:
+            res.append((message[0], message[1]))
+        else:
+            res.append((message["role"], message["content"]))
     return res
